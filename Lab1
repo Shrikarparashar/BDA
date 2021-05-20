@@ -1,1 +1,205 @@
+Last login: Thu May 20 12:15:00 on ttys001
+Shrikars-MacBook-Air:~ shrikarparashar$ cqlsh
+Connected to Test Cluster at 127.0.0.1:9042.
+[cqlsh 5.0.1 | Cassandra 3.11.10 | CQL spec 3.4.4 | Native protocol v4]
+Use HELP for help.
+cqlsh> CREATE KEYSPACE Students WITH REPLICATION = {'class':'SimpleStrategy','replication_factor':1};
+cqlsh>  DESCRIBE KEYSPACES;
+
+tutorialspoint  system_schema  system              system_traces
+students        system_auth    system_distributed  test01       
+
+cqlsh> SELECT * FROM system_schema.keyspaces;
+
+ keyspace_name      | durable_writes | replication
+--------------------+----------------+-------------------------------------------------------------------------------------
+        system_auth |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '1'}
+      system_schema |           True |                             {'class': 'org.apache.cassandra.locator.LocalStrategy'}
+     tutorialspoint |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '3'}
+ system_distributed |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '3'}
+             system |           True |                             {'class': 'org.apache.cassandra.locator.LocalStrategy'}
+      system_traces |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '2'}
+           students |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '1'}
+             test01 |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '1'}
+
+(8 rows)
+cqlsh> use students
+   ... ;
+cqlsh:students> CREATE TABLE Students_Info (Roll_No int PRIMARY KEY, StudName text, DateOfJoining timestamp, last_exam_Percent double);
+cqlsh:students> DESCRIBE TABLES;
+
+students_info
+
+cqlsh:students> DESCRIBE TABLE Students_Info;
+
+CREATE TABLE students.students_info (
+    roll_no int PRIMARY KEY,
+    dateofjoining timestamp,
+    last_exam_percent double,
+    studname text
+) WITH bloom_filter_fp_chance = 0.01
+    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
+    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND crc_check_chance = 1.0
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99PERCENTILE';
+
+cqlsh:students> BEGIN BATCH
+            ... INSERT INTO Students_Info(Roll_No, StudName, DateOfJoining, last_exam_Percent) VALUES (77, ‘Shrikar’, '2014-03-12', 74.9);
+Invalid syntax at line 2, char 92
+  INSERT INTO Students_Info(Roll_No, StudName, DateOfJoining, last_exam_Percent) VALUES (77, ‘Shrikar’, '2014-03-12', 74.9);
+                                                                                             ^
+cqlsh:students> INSERT INTO Students_Info(Roll_No, StudName, DateOfJoining, last_exam_Percent) VALUES (77, ‘shrikar’, '2014-03-12', 74.9);
+Invalid syntax at line 1, char 92
+  INSERT INTO Students_Info(Roll_No, StudName, DateOfJoining, last_exam_Percent) VALUES (77, ‘shrikar’, '2014-03-12', 74.9);
+                                                                                             ^
+cqlsh:students> apply batch
+            ... INSERT INTO Students_Info(Roll_No, StudName, DateOfJoining, last_exam_Percent) VALUES (77, ‘shrikar’, '2014-03-12', 74.9);
+Invalid syntax at line 2, char 92
+  INSERT INTO Students_Info(Roll_No, StudName, DateOfJoining, last_exam_Percent) VALUES (77, ‘shrikar’, '2014-03-12', 74.9);
+                                                                                             ^
+cqlsh:students> INSERT INTO Students_Info(Roll_No, StudName, DateOFJoining, last_exam_Percent) VALUES (77, 'shrikar', '2014-03-12', 77);
+cqlsh:students> INSERT INTO Students_Info(Roll_No, StudName, DateOFJoining, last_exam_Percent) VALUES (33, 'prashant', '2014-01-01', 12);
+cqlsh:students> INSERT INTO Students_Info(Roll_No, StudName, DateOFJoining, last_exam_Percent) VALUES (12. 'krishna', '2015-03-08', 65);
+SyntaxException: line 1:91 mismatched input 'krishna' expecting ')' (..., last_exam_Percent) VALUES (12. ['krishn]...)
+cqlsh:students> INSERT INTO Students_Info(Roll_No, StudName, DateOFJoining, last_exam_Percent) VALUES (12, 'krishna', '2015-03-08', 65);
+cqlsh:students> INSERT INTO Students_Info(Roll_No, StudName, DateOFJoining, last_exam_Percent) VALUES (3, 'roshan', '2013-22-04', 32);
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Unable to coerce '2013-22-04' to a formatted date (long)"
+cqlsh:students> INSERT INTO Students_Info(Roll_No, StudName, DateOFJoining, last_exam_Percent) VALUES (3, 'roshan', '2013-04-22', 32);
+cqlsh:students> INSERT INTO Students_Info(Roll_No, StudName, DateOFJoining, last_exam_Percent) VALUES (44, 'ritu', '2014-05-13', 55);
+cqlsh:students> INSERT INTO Students_Info(Roll_No, StudName, DateOFJoining, last_exam_Percent) VALUES (52, 'rohan', '2012-05-24', 85);
+cqlsh:students> SELECT * FROM Students_Info;
+
+ roll_no | dateofjoining                   | last_exam_percent | studname
+---------+---------------------------------+-------------------+----------
+      33 | 2013-12-31 18:30:00.000000+0000 |                12 | prashant
+      52 | 2012-05-23 18:30:00.000000+0000 |                85 |    rohan
+      44 | 2014-05-12 18:30:00.000000+0000 |                55 |     ritu
+      12 | 2015-03-07 18:30:00.000000+0000 |                65 |  krishna
+      77 | 2014-03-11 18:30:00.000000+0000 |                77 |  shrikar
+       3 | 2013-04-21 18:30:00.000000+0000 |                32 |   roshan
+
+(6 rows)
+cqlsh:students> SELECT * FROM Students_Info WHERE Roll_No IN (33,52,3);
+
+ roll_no | dateofjoining                   | last_exam_percent | studname
+---------+---------------------------------+-------------------+----------
+       3 | 2013-04-21 18:30:00.000000+0000 |                32 |   roshan
+      33 | 2013-12-31 18:30:00.000000+0000 |                12 | prashant
+      52 | 2012-05-23 18:30:00.000000+0000 |                85 |    rohan
+
+(3 rows)
+cqlsh:students> ELECT * FROM Students_Info WHERE studname='shrikar';
+SyntaxException: line 1:0 no viable alternative at input 'ELECT' ([ELECT]...)
+cqlsh:students> SELECT * FROM Students_Info WHERE Studname='shrikar';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING"
+cqlsh:students> SELECT * FROM Students_Info WHERE StudName='shrikar';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING"
+cqlsh:students> SELECT * FROM Students_Info WHERE Studname='shrikar';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING"
+cqlsh:students> SELECT * FROM Students_Info WHERE Studname='shrikar' ALLOW FILTERING;
+
+ roll_no | dateofjoining                   | last_exam_percent | studname
+---------+---------------------------------+-------------------+----------
+      77 | 2014-03-11 18:30:00.000000+0000 |                77 |  shrikar
+
+(1 rows)
+cqlsh:students> select Roll_No, StudName from students_info LIMIT 2;
+
+ roll_no | studname
+---------+----------
+      33 | prashant
+      52 |    rohan
+
+(2 rows)
+cqlsh:students> select Roll_No as "USN" from Students_Info;
+
+ USN
+-----
+  33
+  52
+  44
+  12
+  77
+   3
+
+(6 rows)
+cqlsh:students> UPDATE students_info SET studname='Karun' WHERE Roll_No = 3;
+cqlsh:students> UPDATE students_info SET Roll_No=7 WHERE Roll_No=52;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="PRIMARY KEY part roll_no found in SET part"
+cqlsh:students> UPDATE students_info SET Roll_No=7 WHERE Roll_No=52 ALLOW FILTERING;
+SyntaxException: line 1:52 mismatched input 'ALLOW' expecting EOF (...Roll_No=7 WHERE Roll_No=52 [ALLOW]...)
+cqlsh:students> DELETE last_exam_percent FROM students_info where roll_no=12;;
+SyntaxException: line 1:0 no viable alternative at input ';' ([;])
+cqlsh:students> DELETE last_exam_percent FROM students_info where roll_no=12;
+cqlsh:students> select * from students_info;
+
+ roll_no | dateofjoining                   | last_exam_percent | studname
+---------+---------------------------------+-------------------+----------
+      33 | 2013-12-31 18:30:00.000000+0000 |                12 | prashant
+      52 | 2012-05-23 18:30:00.000000+0000 |                85 |    rohan
+      44 | 2014-05-12 18:30:00.000000+0000 |                55 |     ritu
+      12 | 2015-03-07 18:30:00.000000+0000 |              null |  krishna
+      77 | 2014-03-11 18:30:00.000000+0000 |                77 |  shrikar
+       3 | 2013-04-21 18:30:00.000000+0000 |                32 |    Karun
+
+(6 rows)
+cqlsh:students> delete from students_info where roll_no=12;
+cqlsh:students> select * from students_info;
+
+ roll_no | dateofjoining                   | last_exam_percent | studname
+---------+---------------------------------+-------------------+----------
+      33 | 2013-12-31 18:30:00.000000+0000 |                12 | prashant
+      52 | 2012-05-23 18:30:00.000000+0000 |                85 |    rohan
+      44 | 2014-05-12 18:30:00.000000+0000 |                55 |     ritu
+      77 | 2014-03-11 18:30:00.000000+0000 |                77 |  shrikar
+       3 | 2013-04-21 18:30:00.000000+0000 |                32 |    Karun
+
+(5 rows)
+cqlsh:students> alter table students_info add hobbies set<text>;
+cqlsh:students> alter table students_info add language list<text>;
+cqlsh:students> update students_info set hobbies=hobbies+{'dance,cricket'} where Roll_
+cqlsh:students> update students_info set language=language+['Hindi,English'] where Roll_No=1;
+cqlsh:students> update students_info set language=language+['Hindi,English'] where Roll_No=12;
+cqlsh:students> select * from student_info;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="unconfigured table student_info"
+cqlsh:students> select * from students_info;
+
+ roll_no | dateofjoining                   | hobbies           | language          | last_exam_percent | studname
+---------+---------------------------------+-------------------+-------------------+-------------------+----------
+      33 | 2013-12-31 18:30:00.000000+0000 | {'dance,cricket'} |              null |                12 | prashant
+       1 |                            null |              null | ['Hindi,English'] |              null |     null
+      52 | 2012-05-23 18:30:00.000000+0000 |              null |              null |                85 |    rohan
+      44 | 2014-05-12 18:30:00.000000+0000 |              null |              null |                55 |     ritu
+      12 |                            null |              null | ['Hindi,English'] |              null |     null
+      77 | 2014-03-11 18:30:00.000000+0000 |              null |              null |                77 |  shrikar
+       3 | 2013-04-21 18:30:00.000000+0000 |              null |              null |                32 |    Karun
+
+(7 rows)
+cqlsh:students> alter table students_info add gpa counter;
+ConfigurationException: Cannot add a counter column (gpa) in a non counter column family
+cqlsh:students> alter table students_info add cval counter;
+ConfigurationException: Cannot add a counter column (cval) in a non counter column family
+cqlsh:students>  INSERT INTO Students_Info(Roll_No, StudName, DateOfJoining, last_exam_Percent) VALUES (41,'Paul','2011-02-12',55);
+cqlsh:students> select * from students_info;
+
+ roll_no | dateofjoining                   | hobbies           | language          | last_exam_percent | studname
+---------+---------------------------------+-------------------+-------------------+-------------------+----------
+      33 | 2013-12-31 18:30:00.000000+0000 | {'dance,cricket'} |              null |                12 | prashant
+       1 |                            null |              null | ['Hindi,English'] |              null |     null
+      52 | 2012-05-23 18:30:00.000000+0000 |              null |              null |                85 |    rohan
+      44 | 2014-05-12 18:30:00.000000+0000 |              null |              null |                55 |     ritu
+      41 | 2011-02-11 18:30:00.000000+0000 |              null |              null |                55 |     Paul
+      12 |                            null |              null | ['Hindi,English'] |              null |     null
+      77 | 2014-03-11 18:30:00.000000+0000 |              null |              null |                77 |  shrikar
+       3 | 2013-04-21 18:30:00.000000+0000 |              null |              null |                32 |    Karun
+
 
