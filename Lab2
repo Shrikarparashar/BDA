@@ -1,0 +1,82 @@
+Shrikars-MacBook-Air:~ shrikarparashar$ cqlsh
+Connected to Test Cluster at 127.0.0.1:9042.
+[cqlsh 5.0.1 | Cassandra 3.11.10 | CQL spec 3.4.4 | Native protocol v4]
+Use HELP for help.
+cqlsh> create keyspace labprog with replication = {'class':'SimpleStrategy','replication_factor':1};
+cqlsh> describe keyspaces
+
+tutorialspoint  system_schema  system              system_traces  labprog
+students        system_auth    system_distributed  test01       
+
+cqlsh> use labprog
+   ... ;
+cqlsh:labprog> create table driver(driver_name text primary key,password ascii,mobile bigint,current_position text,skill set<text>);
+cqlsh:labprog> begin batch insert into driver(driver_name,password,mobile,current_position,skill) values ('shrikar', 'pwd', '9443492329;, 'fejfke', {'mechanical', 'fast'}); apply batch;
+           ... insert into driver(driver_name,password,mobile,current_position,skill) values ('shrikar', 'pwd', '9443492329;, 'fejfke', {'mechanical', 'fast'}); 
+           ... insert into driver(driver_name,password,mobile,current_position,skill) values ('shrikar', 'pwd', 9443492329, 'fejfke', {'mechanical', 'fast'}); 
+           ... applybatch;
+           ... insert into driver(driver_name,password,mobile,current_position,skill) values ('shrikar', 'pwd', 9443492329;, 'fejfke', {'mechanical, fast'});
+           ... insert into driver(driver_name,password,mobile,current_position,skill) values ('shrikar', 'pwd', 9443492329, 'fejfke', {'mechanical, fast'});
+           ... apply batch
+           ... ;
+SyntaxException: line 1:124 mismatched input 'fejfke' expecting ')' (...values ('shrikar', 'pwd', '9443492329;, '[fejfke]...)
+cqlsh:labprog> insert into driver(driver_name,password,mobile,current_position,skill) values ('shrikar', 'pwd', 9443492329, 'fejfke', {'mechanical, fast'}); apply batch;
+SyntaxException: line 1:0 no viable alternative at input 'apply' ([apply]...)
+cqlsh:labprog> insert into driver(driver_name,password,mobile,current_position,skill) values ('shrikar', 'pwd', 9443492329, 'fejfke', {'mechanical, fast'}); apply batch;
+SyntaxException: line 1:0 no viable alternative at input 'apply' ([apply]...)
+cqlsh:labprog> insert into driver(driver_name,password,mobile,current_position,skill) values ('shrikar', 'pwd', 9443492329, 'fejfke', {'mechanical, fast'});
+cqlsh:labprog> select * from driver;
+
+ driver_name | current_position | mobile     | password | skill
+-------------+------------------+------------+----------+----------------------
+     shrikar |           fejfke | 9443492329 |      pwd | {'mechanical, fast'}
+
+(1 rows)
+cqlsh:labprog>  insert into driver(driver_name,password,mobile,current_position,skill) values ('pachi', 'sss', 9232333293, 'front', {'tech, niche'}); 
+cqlsh:labprog>  select * from driver;
+
+ driver_name | current_position | mobile     | password | skill
+-------------+------------------+------------+----------+----------------------
+     shrikar |           fejfke | 9443492329 |      pwd | {'mechanical, fast'}
+       pachi |            front | 9232333293 |      sss |      {'tech, niche'}
+
+(2 rows)
+cqlsh:labprog> update driver set current position= 'drive'  where driver_name = shrikar;
+SyntaxException: line 1:26 no viable alternative at input 'position' (update driver set current [position]...)
+cqlsh:labprog> update driver set current_position= 'drive'  where driver_name = shrikar;
+SyntaxException: line 1:72 no viable alternative at input ';' (...= 'drive'  where driver_name = [shrikar];)
+cqlsh:labprog> update driver set current_position= 'drive'  where driver_name = 'shrikar';
+cqlsh:labprog> update driver set password= 'secure' where mobile=923233293;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Some partition key parts are missing: driver_name"
+cqlsh:labprog>  update driver set password= 'secure' where mobile=9232333293;3
+           ... update driver set password= 'secure' where mobile=9232333293;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Some partition key parts are missing: driver_name"
+SyntaxException: line 1:0 no viable alternative at input '3' ([3]...)
+cqlsh:labprog> update driver set password= 'secure' where mobile=9232333293;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Some partition key parts are missing: driver_name"
+cqlsh:labprog> update driver set password= 'secure' where mobile='9232333293';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Invalid STRING constant (9232333293) for "mobile" of type bigint"
+cqlsh:labprog> update driver set password= 'secure' where name = 'pachi';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Undefined column name name"
+cqlsh:labprog> update driver set password= 'secure' where driver_name = 'pachi';
+cqlsh:labprog> select * from driver;
+
+ driver_name | current_position | mobile     | password | skill
+-------------+------------------+------------+----------+----------------------
+     shrikar |            drive | 9443492329 |      pwd | {'mechanical, fast'}
+       pachi |            front | 9232333293 |   secure |      {'tech, niche'}
+
+(2 rows)
+cqlsh:labprog> select * from driver where current_position='drive';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING"
+cqlsh:labprog> select * from driver where current_position='drive'; ALLOW FILTERING;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING"
+SyntaxException: line 1:0 no viable alternative at input 'ALLOW' ([ALLOW]...)
+cqlsh:labprog> select * from driver where current_position='drive' ALLOW FILTERING;
+
+ driver_name | current_position | mobile     | password | skill
+-------------+------------------+------------+----------+----------------------
+     shrikar |            drive | 9443492329 |      pwd | {'mechanical, fast'}
+
+(1 rows)
+cqlsh:labprog> 
